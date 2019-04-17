@@ -1,0 +1,256 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  Lambda to import data from S3 bucket to Serverless Aurora DB CI/CD Pipeline
+Resources:
+  CBRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - codebuild.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: "/"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+      Policies:
+      - PolicyName: codebuild-service
+        PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action: "*"
+            Resource: "*"
+          Version: '2012-10-17'
+  CFRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - cloudformation.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: "/"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/AWSLambdaExecute"
+      Policies:
+      - PolicyName: pipeline-cloudformation-service
+        PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Resource: "*"
+            Action:
+            - "apigateway:*"
+            - "codedeploy:*"
+            - "lambda:*"
+            - "cloudfront:*"
+            - "route53:*"
+            - "ec2:*"
+            - "cloudformation:CreateChangeSet"
+            - "iam:GetRole"
+            - "iam:CreateRole"
+            - "iam:DeleteRole"
+            - "iam:PutRolePolicy"
+            - "iam:AttachRolePolicy"
+            - "iam:DeleteRolePolicy"
+            - "iam:DetachRolePolicy"
+            - "iam:PassRole"
+            - "s3:GetObjectVersion"
+            - "s3:GetBucketVersioning"
+          Version: '2012-10-17'
+  CPRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - codepipeline.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: "/"
+      Policies:
+      - PolicyName: codepipeline-service
+        PolicyDocument:
+          Statement:
+          - Action:
+            - codebuild:*
+            Resource: "*"
+            Effect: Allow
+          - Action:
+            - s3:GetObject
+            - s3:GetObjectVersion
+            - s3:GetBucketVersioning
+            Resource: "*"
+            Effect: Allow
+          - Action:
+            - s3:PutObject
+            Resource:
+            - arn:aws:s3:::codepipeline*
+            Effect: Allow
+          - Action:
+            - s3:*
+            - cloudformation:*
+            - iam:PassRole
+            Resource: "*"
+            Effect: Allow
+          Version: '2012-10-17'
+  CPBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+  CBProject:
+    Type: 'AWS::CodeBuild::Project'
+    Properties:
+      Name: !Sub '${AWS::StackName}-Build'
+      Description: !Sub 'Build project for the ${AWS::StackName} stack.'
+      ServiceRole: !GetAtt CBRole.Arn
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: 'aws/codebuild/nodejs:8.11.0'
+        EnvironmentVariables:
+            - Name: 'DB_HOST'
+              Value: !GetAtt AuroraDBEndpoint
+            - Name: 'DB_NAME'
+              Value: !Ref AuroraDBName
+            - Name: 'DB_USER'
+              Value: !Ref AuroraDBUser
+            - Name: 'DB_PASS'
+              Value: !Ref AuroraDBPassword
+            - Name: 'S3_BUCKET'
+              Value: !Ref CPBucket  
+            - Name: 'VPC_ID'
+              Value: !Ref VpcId
+            - Name: 'VPC_SUBNET'
+              Value: !Ref VpcSubnet
+            - Name: 'VPC_SEC_GROUP'
+              Value: !Ref VpcSecGroup   
+      Source:
+        Type: CODEPIPELINE
+      TimeoutInMinutes: 10
+    DependsOn:
+      - CBRole
+      - CPBucket
+  Pipeline:
+    Type: 'AWS::CodePipeline::Pipeline'
+    Properties:
+      RoleArn: !GetAtt CPRole.Arn
+      ArtifactStore:
+        Type: S3
+        Location: !Ref CPBucket
+      Stages:
+        - Name: Source
+          Actions:
+            - InputArtifacts: []
+              Name: Source
+              ActionTypeId:
+                Category: Source
+                Owner: ThirdParty
+                Version: '1'
+                Provider: GitHub
+              OutputArtifacts:
+                - Name: SourceArtifacts
+              Configuration:
+                Owner: !Ref GitHubUser
+                Repo: !Sub '${AWS::StackName}'
+                Branch: !Ref GitHubBranch
+                OAuthToken: !Ref GitHubKey
+              RunOrder: 1
+        - Name: Build
+          Actions:
+            - Name: Artifact
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Version: '1'
+                Provider: CodeBuild
+              InputArtifacts:
+                - Name: SourceArtifacts
+              OutputArtifacts:
+                - Name: DeploymentArtifacts
+              Configuration:
+                ProjectName: !Ref CBProject
+              RunOrder: 1
+        - Name: DeployToLambda
+          Actions:
+            - Name: CreateChangeSet
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Version: '1'
+                Provider: CloudFormation
+              InputArtifacts:
+                - Name: DeploymentArtifacts
+              Configuration:
+                ActionMode: CHANGE_SET_REPLACE
+                StackName: !Sub '${AWS::StackName}-ci-cd-stack'
+                ChangeSetName: !Sub '${AWS::StackName}-ci-cd-changeset'
+                TemplatePath: DeploymentArtifacts::outputtemplate.yml
+                TemplateConfiguration: DeploymentArtifacts::templateconfig.json
+                Capabilities: CAPABILITY_IAM
+                RoleArn: !GetAtt CFRole.Arn
+              RunOrder: 1
+            - Name: UpdateStack
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Version: '1'
+                Provider: CloudFormation
+              InputArtifacts:
+                - Name: DeploymentArtifacts
+              Configuration:
+                ActionMode: CHANGE_SET_EXECUTE
+                StackName: !Sub '${AWS::StackName}-ci-cd-stack'
+                ChangeSetName: !Sub '${AWS::StackName}-ci-cd-changeset'
+              RunOrder: 2
+    DependsOn:
+      - CBProject
+      - CPRole
+      - CPBucket
+      - CFRole
+Parameters:
+  GitHubUser:
+    Type: String
+    Description: GitHub user
+    Default: oookoook
+  GitHubKey:
+    Type: String
+    Description: GitHub API Key
+  GitHubBranch:
+    Type: String
+    Description: GitHub branch to deploy from
+    Default: master
+   AuroraDBEndpoint:
+    Type: String
+    Description: Aurora DB Endpoint
+  AuroraDBName:
+    Type: String
+    Description: Name of the database to use.
+  AuroraDBUser:
+    Type: String
+    Description: DB Username
+  AuroraDBPassword:
+    Type: String
+    Description: DB Password
+  VpcId:
+    Type: String
+    Description: VPC Id that is used to connect to the Aurora DB (the Aurora DB is created in the default VPC)
+    Default: vpc-227e4049
+  VpcSubnet:
+    Type: String
+    Description: Subnet Id that is used to connect to the Aurora DB (the Aurora DB is connected to all the subnets in the VPC)
+    Default: subnet-0ea0bb543af66e767
+  VpcSecGroup:
+    Type: String
+    Description: Security group Id that is used to connect to the Aurora DB (the Aurora DB uses the default security group)
+    Default: sg-947393fa
+
+

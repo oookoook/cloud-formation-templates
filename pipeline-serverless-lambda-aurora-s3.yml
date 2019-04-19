@@ -45,12 +45,10 @@ Resources:
           - Effect: Allow
             Resource: "*"
             Action:
-            - "apigateway:*"
             - "codedeploy:*"
             - "lambda:*"
-            - "cloudfront:*"
-            - "route53:*"
             - "ec2:*"
+            - "s3:*"
             - "cloudformation:CreateChangeSet"
             - "iam:GetRole"
             - "iam:CreateRole"
@@ -118,7 +116,7 @@ Resources:
         Image: 'aws/codebuild/nodejs:8.11.0'
         EnvironmentVariables:
             - Name: 'DB_HOST'
-              Value: !GetAtt AuroraDBEndpoint
+              Value: !Ref AuroraDBEndpoint
             - Name: 'DB_NAME'
               Value: !Ref AuroraDBName
             - Name: 'DB_USER'
@@ -228,7 +226,7 @@ Parameters:
     Type: String
     Description: GitHub branch to deploy from
     Default: master
-   AuroraDBEndpoint:
+  AuroraDBEndpoint:
     Type: String
     Description: Aurora DB Endpoint
   AuroraDBName:

@@ -144,7 +144,7 @@ Parameters:
     Default: 240000
 Outputs:
   VPC:
-    Value: !GetAtt VPC.Vpc
+    Value: !GetAtt VPC.VpcId
   DBEndpoint:
     Value: !GetAtt Backend.AuroraDBEndpoint
   BackendURL:

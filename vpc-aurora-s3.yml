@@ -97,7 +97,7 @@ Resources:
         VpcEndpointType: Gateway
     
 Outputs: 
-    Vpc: 
+    VpcId: 
         Description: A reference to the created VPC
         Value: !Ref VPC
 

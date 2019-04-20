@@ -1,0 +1,123 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  Master template for an JavaScript SPA app with Node backend hosted in Lambda, using Aurora Serverless as a DB. Data
+  are imported tu the DB from an S3 bucket by a Lambda function.
+Resources:
+  VPC:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters:  
+      TemplateURL: https://s3.eu-central-1.amazonaws.com/akucera-cf-templates/vpc-aurora-s3.yml
+  Backend:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+        APISubDomain: !Ref APISubDomain
+        RootDomain: !Ref RootDomain 
+        CrtArn: !Ref BackendCrtArn 
+        GitHubRepo: !Ref GitHubBackendRepo
+        GitHubUser: !Ref GitHubUser
+        GitHubKey: !Ref GitHubKey
+        GitHubBranch: !Ref GitHubBranch
+        AuroraDBName: !Ref AuroraDBName
+        AuroraDBUser: !Ref AuroraDBUser
+        AuroraDBPassword: !Ref AuroraDBPassword
+        VpcId: !GetAttr VPC.VpcId
+        VpcSubnet1: !GetAttr VPC.VpcSubnet1 
+        VpcSubnet2: !GetAttr VPC.VpcSubnet2
+        VpcSecGroup: !GetAttr VPC.VpcSecGroup 
+      TemplateURL: https://s3.eu-central-1.amazonaws.com/akucera-cf-templates/pipeline-serverless-lambda-aurora-apigw.yml
+  Import:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+        GitHubRepo: !Ref GitHubImportRepo
+        GitHubUser: !Ref GitHubUser
+        GitHubKey: !Ref GitHubKey
+        GitHubBranch: !Ref GitHubBranch
+        AuroraDBName: !Ref AuroraDBName
+        AuroraDBUser: !Ref AuroraDBUser
+        AuroraDBPassword: !Ref AuroraDBPassword
+        VpcId: !GetAttr VPC.VpcId
+        VpcSubnet1: !GetAttr VPC.VpcSubnet1 
+        VpcSubnet2: !GetAttr VPC.VpcSubnet2
+        VpcSecGroup: !GetAttr VPC.VpcSecGroup  
+      TemplateURL: https://s3.eu-central-1.amazonaws.com/akucera-cf-templates/pipeline-serverless-lambda-aurora-s3.yml
+  Frontend:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+        SubDomain: !Ref FrontendSubDomain
+        RootDomain: !Ref RootDomain 
+        CrtArn: !Ref FrontendCrtArn 
+        GitHubRepo: !Ref GitHubFrontendRepo
+        GitHubUser: !Ref GitHubUser
+        GitHubKey: !Ref GitHubKey
+        GitHubBranch: !Ref GitHubBranch
+        BackendUrl: !GetAttr Backend.BackendURL
+        AwakeInterval: !Ref AwakeInterval
+        CognitoUserPoolId: !GetAttr Backend.CognitoUserPoolId
+        CognitoClientId: !GetAttr CognitoClientId
+      TemplateURL: https://s3.eu-central-1.amazonaws.com/akucera-cf-templates/pipeline-spa-s3-cloudfront-route53.yml
+Parameters:
+  FrontendSubDomain:
+    Type: String
+  APISubDomain:
+    Type: String
+  RootDomain:
+    Type: String
+    Default: nastojte.cz
+  FrontendCrtArn:
+    Type: String
+    Description: ARN of the ACM certificate for the frontend subdomain
+    Default: >-
+      arn:aws:acm:us-east-1:422001608153:certificate/1a07bc14-ecd5-4998-bfaa-2431c41f6642
+  BackendCrtArn:
+    Type: String
+    Description: ARN of the ACM certificate for the API subdomain
+    Default: >-
+      arn:aws:acm:us-east-1:422001608153:certificate/1a07bc14-ecd5-4998-bfaa-2431c41f6642
+  GitHubFrontendRepo:
+    Type: String
+    Description: GitHub repository - Frontend
+  GitHubBackendRepo:
+    Type: String
+    Description: GitHub repository - Backend
+  GitHubImportRepo:
+    Type: String
+    Description: GitHub repository - Import
+  GitHubUser:
+    Type: String
+    Description: GitHub repo owner
+    Default: oookoook
+  GitHubKey:
+    Type: String
+    Description: GitHub API Key
+  GitHubBranch:
+    Type: String
+    Description: GitHub branch to deploy from
+    Default: master
+  AuroraDBName:
+    Type: String
+    Description: Name for the created database. Must begin with a letter and contain only alphanumeric characters.
+  AuroraDBUser:
+    Type: String
+    Description: Username for the newly created DB user
+  AuroraDBPassword:
+    Type: String
+    Description: Password that will be used for the newly created DB user
+  AwakeInterval:
+    Type: String
+    Description: Interval in milleseconds the app waits for the DB to initialize from sleep.
+    Default: 240000
+Outputs:
+  VPC:
+    Value: !GetAttr VPC.Vpc
+  DBEndpoint:
+    Value: !GetAttr Backend.AuroraDBEndpoint
+  BackendURL:
+    Value: !GetAttr Backend.BackendURL
+  FrontendURL:
+    Value: !GetAttr Frontend.FrontendURL
+  CognitoARN:
+    Value: !GetAttr Backend.CognitoUserPoolArn

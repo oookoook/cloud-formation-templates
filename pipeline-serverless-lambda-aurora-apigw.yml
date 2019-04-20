@@ -2,6 +2,14 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: >-
   Lambda REST API with Serverless Aurora DB CI/CD Pipeline
 Resources:
+  DbSubnet:
+    Type: "AWS::RDS::DBSubnetGroup"
+    Properties:
+      DBSubnetGroupName: '${AWS:StackName}-subnet-group'
+      SubnetIds:
+      - VpcSubnet1
+      - VpcSubnet2
+  
   AuroraDB:
     Type: "AWS::RDS::DBCluster"
     Properties:
@@ -11,6 +19,9 @@ Resources:
       MasterUsername: !Ref AuroraDBUser
       MasterUserPassword: !Ref AuroraDBPassword
       DBClusterIdentifier: !Sub '${AWS::StackName}-db'
+      VpcSecurityGroupIds:
+        - !Ref VpcSecGroup
+      DBSubnetGroupName: !Ref DbSubnet
       ScalingConfiguration:
         AutoPause: true
         MaxCapacity: 2
@@ -170,8 +181,10 @@ Resources:
               Value: !Ref RootDomain  
             - Name: 'VPC_ID'
               Value: !Ref VpcId
-            - Name: 'VPC_SUBNET'
-              Value: !Ref VpcSubnet
+            - Name: 'VPC_SUBNET_1'
+              Value: !Ref VpcSubnet1
+            - Name: 'VPC_SUBNET_2'
+              Value: !Ref VpcSubnet2
             - Name: 'VPC_SEC_GROUP'
               Value: !Ref VpcSecGroup   
       Source:
@@ -201,7 +214,7 @@ Resources:
                 - Name: SourceArtifacts
               Configuration:
                 Owner: !Ref GitHubUser
-                Repo: !Sub '${AWS::StackName}'
+                Repo: !Ref GitHubRepo
                 Branch: !Ref GitHubBranch
                 OAuthToken: !Ref GitHubKey
               RunOrder: 1
@@ -268,9 +281,12 @@ Parameters:
     Description: ARN of the ACM certificate for the CloudFront distribution for the API
     Default: >-
       arn:aws:acm:us-east-1:422001608153:certificate/1a07bc14-ecd5-4998-bfaa-2431c41f6642
+  GitHubRepo:
+    Type: String
+    Description: GitHub repository
   GitHubUser:
     Type: String
-    Description: GitHub user
+    Description: GitHub repo owner
     Default: oookoook
   GitHubKey:
     Type: String
@@ -292,13 +308,15 @@ Parameters:
     Type: String
     Description: VPC Id that is used to connect to the Aurora DB (the Aurora DB is created in the default VPC)
     Default: vpc-227e4049
-  VpcSubnet:
+  VpcSubnet1:
     Type: String
-    Description: Subnet Id that is used to connect to the Aurora DB (the Aurora DB is connected to all the subnets in the VPC)
-    Default: subnet-0ea0bb543af66e767
+    Description: Subnet Id that is used to connect to the Aurora DB
+  VpcSubnet2:
+    Type: String
+    Description: Subnet Id that is used to connect to the Aurora DB
   VpcSecGroup:
     Type: String
-    Description: Security group Id that is used to connect to the Aurora DB (the Aurora DB uses the default security group)
+    Description: Security group Id that is used to connect to the Aurora DB
     Default: sg-947393fa 
 Outputs:
   AuroraDBEndpoint:

@@ -36,9 +36,9 @@ Resources:
         AvailabilityZone: !Select [ 0, !GetAZs '' ]
         CidrBlock: !Ref PrivateSubnet1CIDR
         MapPublicIpOnLaunch: false
-          Tags: 
-            - Key: Name 
-              Value: !Sub ${AWS::StackName} Private Subnet (AZ1)
+        Tags: 
+          - Key: Name 
+            Value: !Sub '${AWS::StackName} Private Subnet (AZ1)'
 
     PrivateSubnet2: 
       Type: AWS::EC2::Subnet
@@ -49,7 +49,7 @@ Resources:
         MapPublicIpOnLaunch: false
         Tags: 
           - Key: Name 
-            Value: !Sub ${AWS::StackName} Private Subnet (AZ2)
+            Value: !Sub '${AWS::StackName} Private Subnet (AZ2)'
 
     PrivateRouteTable1:
       Type: AWS::EC2::RouteTable
@@ -57,7 +57,7 @@ Resources:
         VpcId: !Ref VPC
         Tags: 
           - Key: Name 
-            Value: !Sub ${AWS::StackName} Private Routes (AZ1)
+            Value: !Sub '${AWS::StackName} Private Routes (AZ1)'
 
     PrivateSubnet1RouteTableAssociation:
       Type: AWS::EC2::SubnetRouteTableAssociation
@@ -81,10 +81,10 @@ Resources:
 
     SecurityGroup:    
       Type: AWS::EC2::SecurityGroup
-       Properties:
-          GroupName: "no-ingress-sg"
-          GroupDescription: "Security group with no ingress rule"
-          VpcId: !Ref VPC
+      Properties:
+        GroupName: "no-ingress-sg"
+        GroupDescription: "Security group with no ingress rule"
+        VpcId: !Ref VPC
 
     S3Endpoint:
       Type: AWS::EC2::VPCEndpoint
@@ -95,29 +95,24 @@ Resources:
           - !Ref PrivateRouteTable2
         ServiceName: !Sub 'com.amazonaws.${AWS::Region}.s3'
         VpcEndpointType: Gateway
-        SubnetIds: 
-          - !Ref PrivateSubnet1
-          - !Ref PrivateSubnet2
-        SecurityGroupIds: 
-          - !Ref SecurityGroup
     
 Outputs: 
-    VPC: 
+    Vpc: 
         Description: A reference to the created VPC
         Value: !Ref VPC
 
-    PrivateSubnets:
+    VpcPrivateSubnets:
         Description: A list of the private subnets
         Value: !Join [ ",", [ !Ref PrivateSubnet1, !Ref PrivateSubnet2 ]]
 
-    PrivateSubnet1:
+    VpcSubnet1:
         Description: A reference to the private subnet in the 1st Availability Zone
         Value: !Ref PrivateSubnet1
-    PrivateSubnet2: 
+    VpcSubnet2: 
         Description: A reference to the private subnet in the 2nd Availability Zone
         Value: !Ref PrivateSubnet2
         
-    SecurityGroup:
+    VpcSecGroup:
         Description: Security group with no ingress rule
         Value: !Ref SecurityGroup
 

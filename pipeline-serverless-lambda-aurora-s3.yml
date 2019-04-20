@@ -127,8 +127,10 @@ Resources:
               Value: !Ref CPBucket  
             - Name: 'VPC_ID'
               Value: !Ref VpcId
-            - Name: 'VPC_SUBNET'
-              Value: !Ref VpcSubnet
+            - Name: 'VPC_SUBNET_1'
+              Value: !Ref VpcSubnet1
+            - Name: 'VPC_SUBNET_2'
+              Value: !Ref VpcSubnet2
             - Name: 'VPC_SEC_GROUP'
               Value: !Ref VpcSecGroup   
       Source:
@@ -158,7 +160,7 @@ Resources:
                 - Name: SourceArtifacts
               Configuration:
                 Owner: !Ref GitHubUser
-                Repo: !Sub '${AWS::StackName}'
+                Repo:  !Ref GitHubRepo
                 Branch: !Ref GitHubBranch
                 OAuthToken: !Ref GitHubKey
               RunOrder: 1
@@ -215,9 +217,12 @@ Resources:
       - CPBucket
       - CFRole
 Parameters:
+  GitHubRepo:
+    Type: String
+    Description: GitHub repository
   GitHubUser:
     Type: String
-    Description: GitHub user
+    Description: GitHub repo owner
     Default: oookoook
   GitHubKey:
     Type: String
@@ -241,14 +246,14 @@ Parameters:
   VpcId:
     Type: String
     Description: VPC Id that is used to connect to the Aurora DB (the Aurora DB is created in the default VPC)
-    Default: vpc-227e4049
-  VpcSubnet:
+  VpcSubnet1:
     Type: String
-    Description: Subnet Id that is used to connect to the Aurora DB (the Aurora DB is connected to all the subnets in the VPC)
-    Default: subnet-0ea0bb543af66e767
+    Description: Subnet Id that is used to connect to the Aurora DB
+  VpcSubnet2:
+    Type: String
+    Description: Subnet Id that is used to connect to the Aurora DB
   VpcSecGroup:
     Type: String
     Description: Security group Id that is used to connect to the Aurora DB (the Aurora DB uses the default security group)
-    Default: sg-947393fa
 
 

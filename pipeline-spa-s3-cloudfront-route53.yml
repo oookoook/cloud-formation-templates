@@ -211,7 +211,7 @@ Resources:
                 - Name: SourceArtifacts
               Configuration:
                 Owner: !Ref GitHubUser
-                Repo: !Sub '${AWS::StackName}'
+                Repo:  !Ref GitHubRepo
                 Branch: !Ref GitHubBranch
                 OAuthToken: !Ref GitHubKey
               RunOrder: 1
@@ -255,9 +255,12 @@ Parameters:
   RootDomain:
     Type: String
     Default: nastojte.cz
+    GitHubRepo:
+    Type: String
+    Description: GitHub repository
   GitHubUser:
     Type: String
-    Description: GitHub user
+    Description: GitHub repo owner
     Default: oookoook
   GitHubKey:
     Type: String

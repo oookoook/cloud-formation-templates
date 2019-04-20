@@ -38,8 +38,7 @@ Metadata:
 Resources:
   VPC:
     Type: AWS::CloudFormation::Stack
-    Properties:
-      Parameters:  
+    Properties:  
       TemplateURL: https://s3.eu-central-1.amazonaws.com/akucera-cf-templates/vpc-aurora-s3.yml
   Backend:
     Type: AWS::CloudFormation::Stack

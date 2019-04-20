@@ -54,10 +54,10 @@ Resources:
         AuroraDBName: !Ref AuroraDBName
         AuroraDBUser: !Ref AuroraDBUser
         AuroraDBPassword: !Ref AuroraDBPassword
-        VpcId: !GetAtt VPC.VpcId
-        VpcSubnet1: !GetAtt VPC.VpcSubnet1 
-        VpcSubnet2: !GetAtt VPC.VpcSubnet2
-        VpcSecGroup: !GetAtt VPC.VpcSecGroup 
+        VpcId: !GetAtt VPC.Outputs.VpcId
+        VpcSubnet1: !GetAtt VPC.Outputs.VpcSubnet1 
+        VpcSubnet2: !GetAtt VPC.Outputs.VpcSubnet2
+        VpcSecGroup: !GetAtt VPC.Outputs.VpcSecGroup 
       TemplateURL: https://s3.eu-central-1.amazonaws.com/akucera-cf-templates/pipeline-serverless-lambda-aurora-apigw.yml
   Import:
     Type: AWS::CloudFormation::Stack
@@ -70,10 +70,10 @@ Resources:
         AuroraDBName: !Ref AuroraDBName
         AuroraDBUser: !Ref AuroraDBUser
         AuroraDBPassword: !Ref AuroraDBPassword
-        VpcId: !GetAtt VPC.VpcId
-        VpcSubnet1: !GetAtt VPC.VpcSubnet1 
-        VpcSubnet2: !GetAtt VPC.VpcSubnet2
-        VpcSecGroup: !GetAtt VPC.VpcSecGroup  
+        VpcId: !GetAtt VPC.Outputs.VpcId
+        VpcSubnet1: !GetAtt VPC.Outputs.VpcSubnet1 
+        VpcSubnet2: !GetAtt VPC.Outputs.VpcSubnet2
+        VpcSecGroup: !GetAtt VPC.Outputs.VpcSecGroup  
       TemplateURL: https://s3.eu-central-1.amazonaws.com/akucera-cf-templates/pipeline-serverless-lambda-aurora-s3.yml
   Frontend:
     Type: AWS::CloudFormation::Stack
@@ -86,10 +86,10 @@ Resources:
         GitHubUser: !Ref GitHubUser
         GitHubKey: !Ref GitHubKey
         GitHubBranch: !Ref GitHubBranch
-        BackendUrl: !GetAtt Backend.BackendURL
+        BackendUrl: !GetAtt Backend.Outputs.BackendURL
         AwakeInterval: !Ref AwakeInterval
-        CognitoUserPoolId: !GetAtt Backend.CognitoUserPoolId
-        CognitoClientId: !GetAtt CognitoClientId
+        CognitoUserPoolId: !GetAtt Backend.Outputs.CognitoUserPoolId
+        CognitoClientId: !GetAtt Backend.Outputs.CognitoClientId
       TemplateURL: https://s3.eu-central-1.amazonaws.com/akucera-cf-templates/pipeline-spa-s3-cloudfront-route53.yml
 Parameters:
   FrontendSubDomain:
@@ -144,12 +144,12 @@ Parameters:
     Default: 240000
 Outputs:
   VPC:
-    Value: !GetAtt VPC.VpcId
+    Value: !GetAtt VPC.Outputs.VpcId
   DBEndpoint:
-    Value: !GetAtt Backend.AuroraDBEndpoint
+    Value: !GetAtt Backend.Outputs.AuroraDBEndpoint
   BackendURL:
-    Value: !GetAtt Backend.BackendURL
+    Value: !GetAtt Backend.Outputs.BackendURL
   FrontendURL:
-    Value: !GetAtt Frontend.FrontendURL
+    Value: !GetAtt Frontend.Outputs.FrontendURL
   CognitoARN:
-    Value: !GetAtt Backend.CognitoUserPoolArn
+    Value: !GetAtt Backend.Outputs.CognitoUserPoolArn

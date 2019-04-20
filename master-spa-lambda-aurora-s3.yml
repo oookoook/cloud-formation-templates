@@ -71,10 +71,10 @@ Resources:
         AuroraDBName: !Ref AuroraDBName
         AuroraDBUser: !Ref AuroraDBUser
         AuroraDBPassword: !Ref AuroraDBPassword
-        VpcId: !GetAttr VPC.VpcId
-        VpcSubnet1: !GetAttr VPC.VpcSubnet1 
-        VpcSubnet2: !GetAttr VPC.VpcSubnet2
-        VpcSecGroup: !GetAttr VPC.VpcSecGroup  
+        VpcId: !GetAtt VPC.VpcId
+        VpcSubnet1: !GetAtt VPC.VpcSubnet1 
+        VpcSubnet2: !GetAtt VPC.VpcSubnet2
+        VpcSecGroup: !GetAtt VPC.VpcSecGroup  
       TemplateURL: https://s3.eu-central-1.amazonaws.com/akucera-cf-templates/pipeline-serverless-lambda-aurora-s3.yml
   Frontend:
     Type: AWS::CloudFormation::Stack

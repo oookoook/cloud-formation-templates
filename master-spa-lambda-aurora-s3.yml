@@ -24,7 +24,7 @@ Metadata:
           - FrontendSubDomain
           - APISubDomain
           - FrontendCrtArn
-          - BAckendCrtArn
+          - BackendCrtArn
       - 
         Label: 
           default: "DB configuration"
@@ -67,6 +67,7 @@ Resources:
         GitHubUser: !Ref GitHubUser
         GitHubKey: !Ref GitHubKey
         GitHubBranch: !Ref GitHubBranch
+        AuroraDBEndpoint: !GetAtt Backend.Outputs.AuroraDBEndpoint
         AuroraDBName: !Ref AuroraDBName
         AuroraDBUser: !Ref AuroraDBUser
         AuroraDBPassword: !Ref AuroraDBPassword

@@ -7,8 +7,8 @@ Resources:
     Properties:
       DBSubnetGroupName: '${AWS:StackName}-subnet-group'
       SubnetIds:
-      - VpcSubnet1
-      - VpcSubnet2
+      - !Ref VpcSubnet1
+      - !Ref VpcSubnet2
   
   AuroraDB:
     Type: "AWS::RDS::DBCluster"

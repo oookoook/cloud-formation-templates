@@ -255,7 +255,7 @@ Parameters:
   RootDomain:
     Type: String
     Default: nastojte.cz
-    GitHubRepo:
+  GitHubRepo:
     Type: String
     Description: GitHub repository
   GitHubUser:
@@ -279,8 +279,8 @@ Parameters:
     Description: URL of the backend api. This value will replace the BACKEND_URL variable during the build.
   AwakeInterval:
     Type: String
-    Description: Interval in milleseconds the app waits for the DB to initialize from sleep.
-    Default: 240000 
+    Description: Interval in minutes after which the DB goes to sleep.
+    Default: 1800
   CognitoUserPoolId:
     Type: String
     Description: ID of the cognito user pool. This value will replace the CG_USER_POOL_ID variable during the build.

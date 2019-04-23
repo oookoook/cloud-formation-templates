@@ -286,5 +286,8 @@ Parameters:
   CognitoClientId:
     Type: String
     Description: ID of the cognito user pool. This value will replace the CG_CLIENT_ID variable during the build.
-
+Outputs:
+  FrontendUrl:
+    Value: !Sub 'https://${SubDomain}.${RootDomain}'
+    Description: URL of the frontend app.
 

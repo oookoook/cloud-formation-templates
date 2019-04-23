@@ -149,9 +149,9 @@ Outputs:
     Value: !GetAtt VPC.Outputs.VpcId
   DBEndpoint:
     Value: !GetAtt Backend.Outputs.AuroraDBEndpoint
-  BackendURL:
-    Value: !GetAtt Backend.Outputs.BackendURL
-  FrontendURL:
-    Value: !GetAtt Frontend.Outputs.FrontendURL
+  BackendUrl:
+    Value: !GetAtt Backend.Outputs.BackendUrl
+  FrontendUrl:
+    Value: !GetAtt Frontend.Outputs.FrontendUrl
   CognitoARN:
     Value: !GetAtt Backend.Outputs.CognitoUserPoolArn

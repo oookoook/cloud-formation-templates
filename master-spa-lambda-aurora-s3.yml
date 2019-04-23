@@ -54,6 +54,7 @@ Resources:
         AuroraDBName: !Ref AuroraDBName
         AuroraDBUser: !Ref AuroraDBUser
         AuroraDBPassword: !Ref AuroraDBPassword
+        AwakeInterval: !Ref AwakeInterval
         VpcId: !GetAtt VPC.Outputs.VpcId
         VpcSubnet1: !GetAtt VPC.Outputs.VpcSubnet1 
         VpcSubnet2: !GetAtt VPC.Outputs.VpcSubnet2
@@ -141,8 +142,8 @@ Parameters:
     Description: Password that will be used for the newly created DB user
   AwakeInterval:
     Type: String
-    Description: Interval in milleseconds the frontend app waits for the DB to initialize from sleep.
-    Default: 240000
+    Description: Interval in seconds after which the DB goes to sleep.
+    Default: 1800
 Outputs:
   VPC:
     Value: !GetAtt VPC.Outputs.VpcId

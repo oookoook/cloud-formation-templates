@@ -5,7 +5,7 @@ Resources:
   DbSubnet:
     Type: "AWS::RDS::DBSubnetGroup"
     Properties:
-      DBSubnetGroupName: '${AWS::StackName}-subnet-group'
+      DBSubnetGroupName: !Sub '${AWS::StackName}-subnet-group'
       DBSubnetGroupDescription: 'Subnet group to allow communication between Lambda and Aurora'
       SubnetIds:
       - !Ref VpcSubnet1
@@ -27,7 +27,7 @@ Resources:
         AutoPause: true
         MaxCapacity: 2
         MinCapacity: 2
-        SecondsUntilAutoPause: 300
+        SecondsUntilAutoPause: !Ref AwakeInterval
   CognitoUserPool:
     Type: AWS::Cognito::UserPool
     Properties:
@@ -302,6 +302,10 @@ Parameters:
   AuroraDBUser:
     Type: String
     Description: Username for the newly created DB user
+  AwakeInterval:
+    Type: String
+    Description: Interval in minutes after which the DB goes to sleep.
+    Default: 1800
   AuroraDBPassword:
     Type: String
     Description: Password that will be used for the newly created DB user

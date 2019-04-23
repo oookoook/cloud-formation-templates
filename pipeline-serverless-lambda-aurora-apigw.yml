@@ -19,7 +19,6 @@ Resources:
       DatabaseName: !Ref AuroraDBName
       MasterUsername: !Ref AuroraDBUser
       MasterUserPassword: !Ref AuroraDBPassword
-      DBClusterIdentifier: !Sub '${AWS::StackName}-db'
       VpcSecurityGroupIds:
         - !Ref VpcSecGroup
       DBSubnetGroupName: !Ref DbSubnet

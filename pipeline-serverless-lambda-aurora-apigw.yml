@@ -327,7 +327,7 @@ Outputs:
   AuroraDBEndpoint:
     Value: !GetAtt AuroraDB.Endpoint.Address
     Description: DBEndpoint
-  CognitoUserPool:
+  CognitoUserPoolId:
     Value: !Ref CognitoUserPool
     Description: Cognito User Pool ID
   CognitoUserPoolArn:

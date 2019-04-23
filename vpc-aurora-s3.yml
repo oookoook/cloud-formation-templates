@@ -82,9 +82,15 @@ Resources:
     SecurityGroup:    
       Type: AWS::EC2::SecurityGroup
       Properties:
-        GroupName: "no-ingress-sg"
+        GroupName: "aurora-access-sg"
         GroupDescription: "Security group with no ingress rule"
         VpcId: !Ref VPC
+        SecurityGroupIngress: 
+          - 
+            IpProtocol: "tcp"
+            FromPort: -1
+            ToPort: 3306
+            CidrIp: "0.0.0.0/0"
 
     S3Endpoint:
       Type: AWS::EC2::VPCEndpoint

@@ -332,7 +332,7 @@ Outputs:
   CognitoUserPoolArn:
     Value: !GetAtt CognitoUserPool.Arn
     Description: Cognito User Pool Arn
-  CognitoClient:
+  CognitoClientId:
     Value: !Ref CognitoUserPoolClient
     Description: Cognito Client ID
   BackendUrl:

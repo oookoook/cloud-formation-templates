@@ -5,7 +5,7 @@ Resources:
   DbSubnet:
     Type: "AWS::RDS::DBSubnetGroup"
     Properties:
-      DBSubnetGroupName: !Sub '${AWS::StackName}-subnet-group'
+      DBSubnetGroupName: !Sub '${AuroraDBName}-subnet-group'
       DBSubnetGroupDescription: 'Subnet group to allow communication between Lambda and Aurora'
       SubnetIds:
       - !Ref VpcSubnet1

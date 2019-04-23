@@ -132,7 +132,9 @@ Resources:
             - Name: 'VPC_SUBNET_2'
               Value: !Ref VpcSubnet2
             - Name: 'VPC_SEC_GROUP'
-              Value: !Ref VpcSecGroup   
+              Value: !Ref VpcSecGroup
+            - Name: 'DATA_BUCKET_NAME'
+              Value: !Ref DataBucketName   
       Source:
         Type: CODEPIPELINE
       TimeoutInMinutes: 10
@@ -243,6 +245,9 @@ Parameters:
   AuroraDBPassword:
     Type: String
     Description: DB Password
+  DataBucketName:
+    Type: String
+    Description: Name for the data import bucket. The bucket must not exist. The bucket itself will be created by the template.
   VpcId:
     Type: String
     Description: VPC Id that is used to connect to the Aurora DB (the Aurora DB is created in the default VPC)

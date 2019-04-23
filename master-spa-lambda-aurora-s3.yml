@@ -33,6 +33,7 @@ Metadata:
           - KeyName
           - AuroraDBUser
           - AuroraDBPassword
+          - DataBucketName
           - AwakeInterval
 
 Resources:
@@ -72,6 +73,7 @@ Resources:
         AuroraDBName: !Ref AuroraDBName
         AuroraDBUser: !Ref AuroraDBUser
         AuroraDBPassword: !Ref AuroraDBPassword
+        DataBucketName: !Ref DataBucketName
         VpcId: !GetAtt VPC.Outputs.VpcId
         VpcSubnet1: !GetAtt VPC.Outputs.VpcSubnet1 
         VpcSubnet2: !GetAtt VPC.Outputs.VpcSubnet2
@@ -140,6 +142,9 @@ Parameters:
   AuroraDBPassword:
     Type: String
     Description: Password that will be used for the newly created DB user
+  DataBucketName:
+    Type: String
+    Description: Name for the data import bucket. The bucket must not exist. The bucket itself will be created by the template.
   AwakeInterval:
     Type: String
     Description: Interval in seconds after which the DB goes to sleep.

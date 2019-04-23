@@ -88,7 +88,7 @@ Resources:
         GitHubUser: !Ref GitHubUser
         GitHubKey: !Ref GitHubKey
         GitHubBranch: !Ref GitHubBranch
-        BackendUrl: !GetAtt Backend.Outputs.BackendURL
+        BackendUrl: !GetAtt Backend.Outputs.BackendUrl
         AwakeInterval: !Ref AwakeInterval
         CognitoUserPoolId: !GetAtt Backend.Outputs.CognitoUserPoolId
         CognitoClientId: !GetAtt Backend.Outputs.CognitoClientId

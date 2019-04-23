@@ -88,7 +88,7 @@ Resources:
         SecurityGroupIngress: 
           - 
             IpProtocol: "tcp"
-            FromPort: -1
+            FromPort: 3306
             ToPort: 3306
             CidrIp: "0.0.0.0/0"
 

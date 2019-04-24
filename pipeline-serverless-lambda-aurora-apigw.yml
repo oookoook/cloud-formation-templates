@@ -147,7 +147,7 @@ Resources:
           Version: '2012-10-17'
   CPBucket:
     Type: AWS::S3::Bucket
-    DeletionPolicy: Delete
+    DeletionPolicy: Retain
   CBProject:
     Type: 'AWS::CodeBuild::Project'
     Properties:

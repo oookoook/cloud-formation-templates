@@ -136,6 +136,7 @@ Parameters:
   AuroraDBName:
     Type: String
     Description: Name for the created database. Must begin with a letter and contain only alphanumeric characters, letters must be lowercase.
+    AllowedPattern: "[a-z][a-z0-9]+"
   AuroraDBUser:
     Type: String
     Description: Username for the newly created DB user
@@ -145,6 +146,7 @@ Parameters:
   DataBucketName:
     Type: String
     Description: Name for the data import bucket. The bucket must not exist. The bucket itself will be created by the template.
+    AllowedPattern: "[a-z0-9\\-\\_]+"
   AwakeInterval:
     Type: String
     Description: Interval in seconds after which the DB goes to sleep.

@@ -146,7 +146,7 @@ Parameters:
   DataBucketName:
     Type: String
     Description: Name for the data import bucket. The bucket must not exist. The bucket itself will be created by the template.
-    AllowedPattern: "[a-z0-9\\-\\_]+"
+    AllowedPattern: "[a-z0-9\\-]+"
   AwakeInterval:
     Type: String
     Description: Interval in seconds after which the DB goes to sleep.

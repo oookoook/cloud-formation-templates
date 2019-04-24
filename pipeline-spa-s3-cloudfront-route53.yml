@@ -5,6 +5,7 @@ Description: >-
 Resources:
   S3Bucket:
     Type: 'AWS::S3::Bucket'
+    DeletionPolicy: Retain
     Properties:
       AccessControl: PublicRead
       WebsiteConfiguration:

@@ -165,5 +165,5 @@ Outputs:
     Value: !GetAtt Frontend.Outputs.FrontendUrl
   CognitoARN:
     Value: !GetAtt Backend.Outputs.CognitoUserPoolArn
-   DataBucketARN:
+  DataBucketARN:
     Value: !Sub 'arn:aws:s3:::${DataBucketName}'

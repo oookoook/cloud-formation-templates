@@ -159,3 +159,12 @@ If you wish to delete the app from the AWS, there are three steps required that 
 ## Resources
 
 This is a list of additonal resources (mostly from AWS Docs that describe the architecture and deployment process in more detail):
+
+* [Creating PipeLine to S3 using CloudFormation](<https://stelligent.com/2017/09/05/continuous-delivery-to-s3-via-codepipeline-and-codebuild/>)
+* [Code PipeLine for AWS Lambda](<https://docs.aws.amazon.com/lambda/latest/dg/build-pipeline.html>)
+* [How to use Cognito with Lambda](<https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-controlling-access-to-apis.html>)
+* [How to react on file upload in S3 with Lambda](<https://docs.aws.amazon.com/lambda/latest/dg/with-s3.html>)
+* [Frontend authentication with Cognito](<https://github.com/aws-amplify/amplify-js/tree/master/packages/amazon-cognito-identity-js>)
+* [How to connect to Aurora Serverless](<https://aws.amazon.com/getting-started/tutorials/configure-connect-serverless-mysql-database-aurora/>)
+* [Api Gateway on custom domain](<https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-custom-domains.html>)
+* [VPC Endpoints](<https://docs.aws.amazon.com/vpc/latest/userguide/vpc-endpoints.html>)

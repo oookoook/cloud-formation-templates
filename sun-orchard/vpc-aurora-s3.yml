@@ -1,0 +1,126 @@
+
+Description: 
+    This template is based on https://docs.aws.amazon.com/codebuild/latest/userguide/cloudformation-vpc-template.html.
+    It creates a VPC with two private subnets and Gateway Endpoint to S3. It is intended for use for data import from
+    S3 to Aurora via Lambda.
+
+Parameters:
+    VpcCIDR: 
+      Description: Please enter the IP range (CIDR notation) for this VPC
+      Type: String
+      Default: 10.192.0.0/16
+
+    PrivateSubnet1CIDR:
+      Description: Please enter the IP range (CIDR notation) for the private subnet in the first Availability Zone
+      Type: String
+      Default: 10.192.20.0/24
+
+    PrivateSubnet2CIDR:
+      Description: Please enter the IP range (CIDR notation) for the private subnet in the second Availability Zone
+      Type: String
+      Default: 10.192.21.0/24
+
+Resources:
+    VPC: 
+      Type: AWS::EC2::VPC
+      Properties:
+        CidrBlock: !Ref VpcCIDR
+        Tags: 
+          - Key: Name 
+            Value: !Sub '${AWS::StackName}'
+
+    PrivateSubnet1: 
+      Type: AWS::EC2::Subnet
+      Properties:
+        VpcId: !Ref VPC
+        AvailabilityZone: !Select [ 0, !GetAZs '' ]
+        CidrBlock: !Ref PrivateSubnet1CIDR
+        MapPublicIpOnLaunch: false
+        Tags: 
+          - Key: Name 
+            Value: !Sub '${AWS::StackName} Private Subnet (AZ1)'
+
+    PrivateSubnet2: 
+      Type: AWS::EC2::Subnet
+      Properties:
+        VpcId: !Ref VPC
+        AvailabilityZone: !Select [ 1, !GetAZs '' ]
+        CidrBlock: !Ref PrivateSubnet2CIDR
+        MapPublicIpOnLaunch: false
+        Tags: 
+          - Key: Name 
+            Value: !Sub '${AWS::StackName} Private Subnet (AZ2)'
+
+    PrivateRouteTable1:
+      Type: AWS::EC2::RouteTable
+      Properties: 
+        VpcId: !Ref VPC
+        Tags: 
+          - Key: Name 
+            Value: !Sub '${AWS::StackName} Private Routes (AZ1)'
+
+    PrivateSubnet1RouteTableAssociation:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        RouteTableId: !Ref PrivateRouteTable1
+        SubnetId: !Ref PrivateSubnet1
+
+    PrivateRouteTable2:
+      Type: AWS::EC2::RouteTable
+      Properties: 
+        VpcId: !Ref VPC
+        Tags: 
+          - Key: Name 
+            Value: !Sub ${AWS::StackName} Private Routes (AZ2)
+
+    PrivateSubnet2RouteTableAssociation:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        RouteTableId: !Ref PrivateRouteTable2
+        SubnetId: !Ref PrivateSubnet2
+
+    SecurityGroup:    
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        GroupName: "aurora-access-sg"
+        GroupDescription: "Security group with no ingress rule"
+        VpcId: !Ref VPC
+        SecurityGroupIngress: 
+          - 
+            IpProtocol: "tcp"
+            FromPort: 3306
+            ToPort: 3306
+            CidrIp: "0.0.0.0/0"
+
+    S3Endpoint:
+      Type: AWS::EC2::VPCEndpoint
+      Properties: 
+        VpcId: !Ref VPC
+        RouteTableIds: 
+          - !Ref PrivateRouteTable1
+          - !Ref PrivateRouteTable2
+        ServiceName: !Sub 'com.amazonaws.${AWS::Region}.s3'
+        VpcEndpointType: Gateway
+    
+Outputs: 
+    VpcId: 
+        Description: A reference to the created VPC
+        Value: !Ref VPC
+
+    VpcPrivateSubnets:
+        Description: A list of the private subnets
+        Value: !Join [ ",", [ !Ref PrivateSubnet1, !Ref PrivateSubnet2 ]]
+
+    VpcSubnet1:
+        Description: A reference to the private subnet in the 1st Availability Zone
+        Value: !Ref PrivateSubnet1
+    VpcSubnet2: 
+        Description: A reference to the private subnet in the 2nd Availability Zone
+        Value: !Ref PrivateSubnet2
+        
+    VpcSecGroup:
+        Description: Security group with no ingress rule
+        Value: !Ref SecurityGroup
+
+
+

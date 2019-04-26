@@ -1,53 +1,7 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: >-
-  Lambda REST API with Serverless Aurora DB CI/CD Pipeline
+  Lambda to import data from S3 bucket to Serverless Aurora DB CI/CD Pipeline
 Resources:
-  DbSubnet:
-    Type: "AWS::RDS::DBSubnetGroup"
-    Properties:
-      DBSubnetGroupName: !Sub '${AuroraDBName}-subnet-group'
-      DBSubnetGroupDescription: 'Subnet group to allow communication between Lambda and Aurora'
-      SubnetIds:
-      - !Ref VpcSubnet1
-      - !Ref VpcSubnet2
-  
-  AuroraDB:
-    Type: "AWS::RDS::DBCluster"
-    Properties:
-      Engine: aurora
-      EngineMode: serverless
-      DatabaseName: !Ref AuroraDBName
-      MasterUsername: !Ref AuroraDBUser
-      MasterUserPassword: !Ref AuroraDBPassword
-      VpcSecurityGroupIds:
-        - !Ref VpcSecGroup
-      DBSubnetGroupName: !Ref DbSubnet
-      ScalingConfiguration:
-        AutoPause: true
-        MaxCapacity: 2
-        MinCapacity: 2
-        SecondsUntilAutoPause: !Ref AwakeInterval
-  CognitoUserPool:
-    Type: AWS::Cognito::UserPool
-    Properties:
-      AdminCreateUserConfig:
-        AllowAdminCreateUserOnly: True
-      UserPoolName: !Sub '${AWS::StackName}-UserPool'
-      Policies:
-        PasswordPolicy:
-          MinimumLength: 8
-      UsernameAttributes:
-        - email
-      Schema:
-        - AttributeDataType: String
-          Name: email
-          Required: false
-  CognitoUserPoolClient:
-    Type: AWS::Cognito::UserPoolClient
-    Properties:
-      UserPoolId: !Ref CognitoUserPool
-      ClientName: !Sub '${AWS::StackName}-client'
-      GenerateSecret: false
   CBRole:
     Type: AWS::IAM::Role
     Properties:
@@ -91,12 +45,10 @@ Resources:
           - Effect: Allow
             Resource: "*"
             Action:
-            - "apigateway:*"
             - "codedeploy:*"
             - "lambda:*"
-            - "cloudfront:*"
-            - "route53:*"
             - "ec2:*"
+            - "s3:*"
             - "cloudformation:CreateChangeSet"
             - "iam:GetRole"
             - "iam:CreateRole"
@@ -164,23 +116,15 @@ Resources:
         Image: 'aws/codebuild/nodejs:8.11.0'
         EnvironmentVariables:
             - Name: 'DB_HOST'
-              Value: !GetAtt AuroraDB.Endpoint.Address
+              Value: !Ref AuroraDBEndpoint
             - Name: 'DB_NAME'
               Value: !Ref AuroraDBName
             - Name: 'DB_USER'
               Value: !Ref AuroraDBUser
             - Name: 'DB_PASS'
               Value: !Ref AuroraDBPassword
-            - Name: 'CG_USER_POOL_ARN'
-              Value: !GetAtt CognitoUserPool.Arn
             - Name: 'S3_BUCKET'
-              Value: !Ref CPBucket
-            - Name: 'ACM_CERT'
-              Value: !Ref CrtArn
-            - Name: 'APIGW_SUB_DOMAIN'
-              Value: !Ref APISubDomain
-            - Name: 'APIGW_ROOT_DOMAIN'
-              Value: !Ref RootDomain  
+              Value: !Ref CPBucket  
             - Name: 'VPC_ID'
               Value: !Ref VpcId
             - Name: 'VPC_SUBNET_1'
@@ -188,7 +132,9 @@ Resources:
             - Name: 'VPC_SUBNET_2'
               Value: !Ref VpcSubnet2
             - Name: 'VPC_SEC_GROUP'
-              Value: !Ref VpcSecGroup   
+              Value: !Ref VpcSecGroup
+            - Name: 'DATA_BUCKET_NAME'
+              Value: !Ref DataBucketName   
       Source:
         Type: CODEPIPELINE
       TimeoutInMinutes: 10
@@ -216,7 +162,7 @@ Resources:
                 - Name: SourceArtifacts
               Configuration:
                 Owner: !Ref GitHubUser
-                Repo: !Ref GitHubRepo
+                Repo:  !Ref GitHubRepo
                 Branch: !Ref GitHubBranch
                 OAuthToken: !Ref GitHubKey
               RunOrder: 1
@@ -273,16 +219,6 @@ Resources:
       - CPBucket
       - CFRole
 Parameters:
-  APISubDomain:
-    Type: String
-  RootDomain:
-    Type: String
-    Default: nastojte.cz
-  CrtArn:
-    Type: String
-    Description: ARN of the ACM certificate for the CloudFront distribution for the API
-    Default: >-
-      arn:aws:acm:us-east-1:422001608153:certificate/1a07bc14-ecd5-4998-bfaa-2431c41f6642
   GitHubRepo:
     Type: String
     Description: GitHub repository
@@ -297,23 +233,24 @@ Parameters:
     Type: String
     Description: GitHub branch to deploy from
     Default: master
+  AuroraDBEndpoint:
+    Type: String
+    Description: Aurora DB Endpoint
   AuroraDBName:
     Type: String
-    Description: Name for the created database. Must begin with a letter and contain only alphanumeric characters.
+    Description: Name of the database to use.
   AuroraDBUser:
     Type: String
-    Description: Username for the newly created DB user
-  AwakeInterval:
-    Type: String
-    Description: Interval in minutes after which the DB goes to sleep.
-    Default: 1800
+    Description: DB Username
   AuroraDBPassword:
     Type: String
-    Description: Password that will be used for the newly created DB user
+    Description: DB Password
+  DataBucketName:
+    Type: String
+    Description: Name for the data import bucket. The bucket must not exist. The bucket itself will be created by the template.
   VpcId:
     Type: String
     Description: VPC Id that is used to connect to the Aurora DB (the Aurora DB is created in the default VPC)
-    Default: vpc-227e4049
   VpcSubnet1:
     Type: String
     Description: Subnet Id that is used to connect to the Aurora DB
@@ -322,23 +259,6 @@ Parameters:
     Description: Subnet Id that is used to connect to the Aurora DB
   VpcSecGroup:
     Type: String
-    Description: Security group Id that is used to connect to the Aurora DB
-    Default: sg-947393fa 
-Outputs:
-  AuroraDBEndpoint:
-    Value: !GetAtt AuroraDB.Endpoint.Address
-    Description: DBEndpoint
-  CognitoUserPoolId:
-    Value: !Ref CognitoUserPool
-    Description: Cognito User Pool ID
-  CognitoUserPoolArn:
-    Value: !GetAtt CognitoUserPool.Arn
-    Description: Cognito User Pool Arn
-  CognitoClientId:
-    Value: !Ref CognitoUserPoolClient
-    Description: Cognito Client ID
-  BackendUrl:
-    Value: !Sub 'https://${APISubDomain}.${RootDomain}'
-    Description: URL of the backend api.
+    Description: Security group Id that is used to connect to the Aurora DB (the Aurora DB uses the default security group)
 
 

@@ -1,0 +1,294 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  SPA app hosted in S3 with CI/CD - based on
+  https://github.com/stelligent/devops-essentials/blob/master/samples/static/pipeline.yml
+Resources:
+  S3Bucket:
+    Type: 'AWS::S3::Bucket'
+    DeletionPolicy: Retain
+    Properties:
+      AccessControl: PublicRead
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: 404.html
+    DependsOn: []
+  S3PublicPolicy:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: PublicReadForGetBucketObjects
+            Effect: Allow
+            Principal: '*'
+            Action: 's3:GetObject'
+            Resource: !Join 
+              - ''
+              - - 'arn:aws:s3:::'
+                - !Ref S3Bucket
+                - /*
+      Bucket: !Ref S3Bucket
+  R53ARecord:
+    Type: 'AWS::Route53::RecordSet'
+    Properties:
+      HostedZoneName: !Sub '${RootDomain}.'
+      Name: !Sub '${SubDomain}.${RootDomain}.'
+      Type: A
+      AliasTarget:
+        HostedZoneId: Z2FDTNDATAQYW2
+        DNSName: !GetAtt 
+          - CFDist
+          - DomainName
+    DependsOn:
+      - CFDist
+  CFDist:
+    Type: 'AWS::CloudFront::Distribution'
+    Properties:
+      DistributionConfig:
+        Aliases:
+          - !Join 
+            - .
+            - - !Ref SubDomain
+              - !Ref RootDomain
+        Enabled: true
+        DefaultRootObject: index.html
+        PriceClass: PriceClass_100
+        CacheBehaviors:
+          - TargetOriginId: !Sub 'S3-Origin-${AWS::StackName}'
+            PathPattern: index.html
+            ViewerProtocolPolicy: redirect-to-https
+            MinTTL: 0
+            MaxTTL: 0
+            DefaultTTL: 0
+            AllowedMethods:
+              - HEAD
+              - GET
+              - OPTIONS
+            CachedMethods:
+              - HEAD
+              - GET
+            ForwardedValues:
+              QueryString: 'false'
+              Cookies:
+                Forward: none
+        DefaultCacheBehavior:
+          TargetOriginId: !Sub 'S3-Origin-${AWS::StackName}'
+          ViewerProtocolPolicy: redirect-to-https
+          MinTTL: 0
+          AllowedMethods:
+            - HEAD
+            - GET
+            - OPTIONS
+          CachedMethods:
+            - HEAD
+            - GET
+            - OPTIONS
+          ForwardedValues:
+            QueryString: 'false'
+            Cookies:
+              Forward: none
+        Origins:
+          - DomainName: !GetAtt 
+              - S3Bucket
+              - DomainName
+            Id: !Sub 'S3-Origin-${AWS::StackName}'
+            S3OriginConfig: {}
+        Restrictions:
+          GeoRestriction:
+            RestrictionType: none
+            Locations: []
+        ViewerCertificate:
+          SslSupportMethod: sni-only
+          MinimumProtocolVersion: TLSv1.1_2016
+          AcmCertificateArn: !Ref CrtArn
+    DependsOn:
+      - S3Bucket
+  CBRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - codebuild.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: "/"
+      Policies:
+      - PolicyName: codebuild-service
+        PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action: "*"
+            Resource: "*"
+          Version: '2012-10-17'
+  CPRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - codepipeline.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: "/"
+      Policies:
+      - PolicyName: codepipeline-service
+        PolicyDocument:
+          Statement:
+          - Action:
+            - codebuild:*
+            Resource: "*"
+            Effect: Allow
+          - Action:
+            - s3:GetObject
+            - s3:GetObjectVersion
+            - s3:GetBucketVersioning
+            Resource: "*"
+            Effect: Allow
+          - Action:
+            - s3:PutObject
+            Resource:
+            - arn:aws:s3:::codepipeline*
+            Effect: Allow
+          - Action:
+            - s3:*
+            - cloudformation:*
+            - iam:PassRole
+            Resource: "*"
+            Effect: Allow
+          Version: '2012-10-17'
+  CPBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+  CBProject:
+    Type: 'AWS::CodeBuild::Project'
+    Properties:
+      Name: !Sub '${AWS::StackName}-Build'
+      Description: !Sub 'Build project for the ${AWS::StackName} stack.'
+      ServiceRole: !GetAtt CBRole.Arn
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: 'aws/codebuild/nodejs:8.11.0'
+        EnvironmentVariables:
+            - Name: 'BACKEND_URL'
+              Value: !Ref BackendUrl
+            - Name: 'AWAKE_INTERVAL'
+              Value: !Ref AwakeInterval  
+            - Name: 'CG_USER_POOL_ID'
+              Value: !Ref CognitoUserPoolId
+            - Name: 'CG_CLIENT_ID'
+              Value: !Ref CognitoClientId
+      Source:
+        Type: CODEPIPELINE
+      TimeoutInMinutes: 10
+    DependsOn:
+      - CBRole
+  Pipeline:
+    Type: 'AWS::CodePipeline::Pipeline'
+    Properties:
+      RoleArn: !GetAtt CPRole.Arn
+      ArtifactStore:
+        Type: S3
+        Location: !Ref CPBucket
+      Stages:
+        - Name: Source
+          Actions:
+            - InputArtifacts: []
+              Name: Source
+              ActionTypeId:
+                Category: Source
+                Owner: ThirdParty
+                Version: '1'
+                Provider: GitHub
+              OutputArtifacts:
+                - Name: SourceArtifacts
+              Configuration:
+                Owner: !Ref GitHubUser
+                Repo:  !Ref GitHubRepo
+                Branch: !Ref GitHubBranch
+                OAuthToken: !Ref GitHubKey
+              RunOrder: 1
+        - Name: Build
+          Actions:
+            - Name: Artifact
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Version: '1'
+                Provider: CodeBuild
+              InputArtifacts:
+                - Name: SourceArtifacts
+              OutputArtifacts:
+                - Name: DeploymentArtifacts
+              Configuration:
+                ProjectName: !Ref CBProject
+              RunOrder: 1
+        - Name: DeployToS3
+          Actions:
+            - Name: Deploy
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Version: '1'
+                Provider: S3
+              InputArtifacts:
+                - Name: DeploymentArtifacts
+              Configuration:
+                BucketName: !Ref S3Bucket
+                Extract: true
+              RunOrder: 1
+    DependsOn:
+      - S3Bucket
+      - CBProject
+      - CPRole
+      - CPBucket
+Parameters:
+  SubDomain:
+    Type: String
+  RootDomain:
+    Type: String
+    Default: nastojte.cz
+  GitHubRepo:
+    Type: String
+    Description: GitHub repository
+  GitHubUser:
+    Type: String
+    Description: GitHub repo owner
+    Default: oookoook
+  GitHubKey:
+    Type: String
+    Description: GitHub API Key
+  GitHubBranch:
+    Type: String
+    Description: GitHub branch to deploy from
+    Default: master
+  CrtArn:
+    Type: String
+    Description: ARN of the ACM certificate for the CloudFront distribution
+    Default: >-
+      arn:aws:acm:us-east-1:422001608153:certificate/1a07bc14-ecd5-4998-bfaa-2431c41f6642
+  BackendUrl:
+    Type: String
+    Description: URL of the backend api. This value will replace the BACKEND_URL variable during the build.
+  AwakeInterval:
+    Type: String
+    Description: Interval in minutes after which the DB goes to sleep.
+    Default: 1800
+  CognitoUserPoolId:
+    Type: String
+    Description: ID of the cognito user pool. This value will replace the CG_USER_POOL_ID variable during the build.
+  CognitoClientId:
+    Type: String
+    Description: ID of the cognito user pool. This value will replace the CG_CLIENT_ID variable during the build.
+Outputs:
+  FrontendUrl:
+    Value: !Sub 'https://${SubDomain}.${RootDomain}'
+    Description: URL of the frontend app.
+

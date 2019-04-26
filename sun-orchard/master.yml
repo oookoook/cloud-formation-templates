@@ -10,8 +10,8 @@ Metadata:
         Label: 
           default: "GitHub repository configuration"
         Parameters: 
-          - GitHubUser
           - GitHubKey
+          - GitHubUser
           - GitHubBranch
           - GitHubFrontendRepo
           - GitHubBackendRepo
@@ -39,7 +39,7 @@ Resources:
   VPC:
     Type: AWS::CloudFormation::Stack
     Properties:  
-      TemplateURL: https://s3.eu-central-1.amazonaws.com/akucera-cf-templates/vpc-aurora-s3.yml
+      TemplateURL: https://s3.eu-central-1.amazonaws.com/akucera-cf-templates/sun-orchard/vpc-aurora-s3.yml
   Backend:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -59,7 +59,7 @@ Resources:
         VpcSubnet1: !GetAtt VPC.Outputs.VpcSubnet1 
         VpcSubnet2: !GetAtt VPC.Outputs.VpcSubnet2
         VpcSecGroup: !GetAtt VPC.Outputs.VpcSecGroup 
-      TemplateURL: https://s3.eu-central-1.amazonaws.com/akucera-cf-templates/pipeline-serverless-lambda-aurora-apigw.yml
+      TemplateURL: https://s3.eu-central-1.amazonaws.com/akucera-cf-templates/sun-orchard/pipeline-serverless-lambda-aurora-apigw.yml
   Import:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -77,7 +77,7 @@ Resources:
         VpcSubnet1: !GetAtt VPC.Outputs.VpcSubnet1 
         VpcSubnet2: !GetAtt VPC.Outputs.VpcSubnet2
         VpcSecGroup: !GetAtt VPC.Outputs.VpcSecGroup  
-      TemplateURL: https://s3.eu-central-1.amazonaws.com/akucera-cf-templates/pipeline-serverless-lambda-aurora-s3.yml
+      TemplateURL: https://s3.eu-central-1.amazonaws.com/akucera-cf-templates/sun-orchard/pipeline-serverless-lambda-aurora-s3.yml
   Frontend:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -93,34 +93,35 @@ Resources:
         AwakeInterval: !Ref AwakeInterval
         CognitoUserPoolId: !GetAtt Backend.Outputs.CognitoUserPoolId
         CognitoClientId: !GetAtt Backend.Outputs.CognitoClientId
-      TemplateURL: https://s3.eu-central-1.amazonaws.com/akucera-cf-templates/pipeline-spa-s3-cloudfront-route53.yml
+      TemplateURL: https://s3.eu-central-1.amazonaws.com/akucera-cf-templates/sun-orchard/pipeline-spa-s3-cloudfront-route53.yml
 Parameters:
   FrontendSubDomain:
     Type: String
+    Default: sunorchard
   APISubDomain:
     Type: String
+    Default: sunorchard-api
   RootDomain:
     Type: String
-    Default: nastojte.cz
+    Default: actaeonconsulting.com
   FrontendCrtArn:
     Type: String
     Description: ARN of the ACM certificate for the frontend subdomain
-    Default: >-
-      arn:aws:acm:us-east-1:422001608153:certificate/1a07bc14-ecd5-4998-bfaa-2431c41f6642
   BackendCrtArn:
     Type: String
     Description: ARN of the ACM certificate for the API subdomain
-    Default: >-
-      arn:aws:acm:us-east-1:422001608153:certificate/1a07bc14-ecd5-4998-bfaa-2431c41f6642
   GitHubFrontendRepo:
     Type: String
     Description: GitHub repository - Frontend
+    Default: sun-orchard-frontend
   GitHubBackendRepo:
     Type: String
     Description: GitHub repository - Backend
+    Default: sun-orchard-backend
   GitHubImportRepo:
     Type: String
     Description: GitHub repository - Import
+    Default: sun-orchard-import
   GitHubUser:
     Type: String
     Description: GitHub repo owner
@@ -131,14 +132,16 @@ Parameters:
   GitHubBranch:
     Type: String
     Description: GitHub branch to deploy from
-    Default: master
+    Default: production
   AuroraDBName:
     Type: String
     Description: Name for the created database. Must begin with a letter and contain only alphanumeric characters, letters must be lowercase.
     AllowedPattern: "[a-z][a-z0-9]+"
+    Default: sunorcharddb
   AuroraDBUser:
     Type: String
     Description: Username for the newly created DB user
+    Default: orchard
   AuroraDBPassword:
     Type: String
     Description: Password that will be used for the newly created DB user
@@ -146,6 +149,7 @@ Parameters:
     Type: String
     Description: Name for the data import bucket. The bucket must not exist. The bucket itself will be created by the template.
     AllowedPattern: "[a-z0-9\\-]+"
+    Default: sun-orchard-data-import
   AwakeInterval:
     Type: String
     Description: Interval in seconds after which the DB goes to sleep.
@@ -161,5 +165,5 @@ Outputs:
     Value: !GetAtt Frontend.Outputs.FrontendUrl
   CognitoARN:
     Value: !GetAtt Backend.Outputs.CognitoUserPoolArn
-  DataBucketARN:
+   DataBucketARN:
     Value: !Sub 'arn:aws:s3:::${DataBucketName}'

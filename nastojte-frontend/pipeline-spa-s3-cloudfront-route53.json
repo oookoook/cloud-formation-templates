@@ -1,0 +1,161 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Resources": {
+    "zonenastojtecz": {
+      "Type": "AWS::Route53::HostedZone",
+      "Properties": {
+        "Name": "nastojte.cz."
+      }
+    },
+    "dnsnastojtecz": {
+      "Type": "AWS::Route53::RecordSetGroup",
+      "Properties": {
+        "HostedZoneId": {
+          "Ref": "zonenastojtecz"
+        },
+        "RecordSets": [
+          {
+            "Name": "nastojte.cz.",
+            "Type": "A",
+            "AliasTarget": {
+              "HostedZoneId": "Z2FDTNDATAQYW2",
+              "DNSName": "d2juw252zkqh9v.cloudfront.net"
+            }
+          }
+        ]
+      }
+    },
+    "distd2juw252zkqh9vcloudfrontnet": {
+      "Type": "AWS::CloudFront::Distribution",
+      "Properties": {
+        "DistributionConfig": {
+          "Aliases": [
+            "nastojte.cz",
+            "www.nastojte.cz"
+          ],
+          "Enabled": true,
+          "DefaultRootObject": "index.html",
+          "PriceClass": "PriceClass_100",
+          "CacheBehaviors": [
+            {
+              "TargetOriginId": "S3-nastojte",
+              "PathPattern": "index.html",
+              "ViewerProtocolPolicy": "redirect-to-https",
+              "MinTTL": 0,
+              "MaxTTL": 0,
+              "DefaultTTL": 0,
+              "AllowedMethods": [
+                "HEAD",
+                "GET",
+                "OPTIONS"
+              ],
+              "CachedMethods": [
+                "HEAD",
+                "GET"
+              ],
+              "ForwardedValues": {
+                "Cookies": {
+                  "Forward": "none"
+                }
+              }
+            }
+          ],
+          "DefaultCacheBehavior": {
+            "TargetOriginId": "S3-nastojte",
+            "ViewerProtocolPolicy": "redirect-to-https",
+            "MinTTL": 0,
+            "AllowedMethods": [
+              "HEAD",
+              "GET",
+              "OPTIONS"
+            ],
+            "CachedMethods": [
+              "HEAD",
+              "GET",
+              "OPTIONS"
+            ],
+            "ForwardedValues": {
+              "Cookies": {
+                "Forward": "none"
+              }
+            }
+          },
+          "Origins": [
+            {
+              "DomainName": "nastojte.s3.amazonaws.com",
+              "Id": "S3-nastojte",
+              "S3OriginConfig": {
+              }
+            }
+          ],
+          "Restrictions": {
+            "GeoRestriction": {
+              "RestrictionType": "none",
+              "Locations": [
+
+              ]
+            }
+          },
+          "ViewerCertificate": {
+            "SslSupportMethod": "sni-only",
+            "MinimumProtocolVersion": "TLSv1.1_2016"
+          }
+        }
+      }
+    },
+    "s3nastojte": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "WebsiteConfiguration": {
+          "IndexDocument": "index.html"
+        },
+        "AccessControl": "PublicReadWrite",
+        "VersioningConfiguration": {
+          "Status": "Suspended"
+        },
+        "Tags": [
+          {
+            "Key": "app",
+            "Value": "nastojte"
+          }
+        ]
+      }
+    },
+    "s3policynastojte": {
+      "Type": "AWS::S3::BucketPolicy",
+      "Properties": {
+        "Bucket": {
+          "Ref": "s3nastojte"
+        },
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "PublicReadForGetBucketObjects",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": "s3:GetObject",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:s3:::",
+                    {
+                      "Ref": "s3nastojte"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "Description": "Nastojte frontend app stack - Route 53, CloudFront, S3, CodePipeline"
+}
+
+
+"Name": { "Fn::Join": ["", [ { "Fn::Join": [".", [ { "Ref": "RootDomainName" }, { "Ref": "RootDomainName" }, "."]] },
+Exactly one of [AcmCertificateArn,CloudFrontDefaultCertificate,IamCertificateId] needs to be specified

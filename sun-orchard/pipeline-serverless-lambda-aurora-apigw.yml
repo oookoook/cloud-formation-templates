@@ -29,7 +29,7 @@ Resources:
         SecondsUntilAutoPause: !If
           - DBStopCondition
           - !Ref AwakeInterval
-          - 'AWS::NoValue'
+          - AWS::NoValue
         AutoPause: !Ref StopDB
   CognitoUserPool:
     Type: AWS::Cognito::UserPool

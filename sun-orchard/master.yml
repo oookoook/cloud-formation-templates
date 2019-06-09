@@ -33,6 +33,7 @@ Metadata:
           - AuroraDBUser
           - AuroraDBPassword
           - DataBucketName
+          - StopDB
           - AwakeInterval
 
 Resources:

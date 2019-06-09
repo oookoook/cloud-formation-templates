@@ -23,13 +23,9 @@ Resources:
         - !Ref VpcSecGroup
       DBSubnetGroupName: !Ref DbSubnet
       ScalingConfiguration:
-        AutoPause: true
         MaxCapacity: 2
         MinCapacity: 2
-        SecondsUntilAutoPause: !If
-          - DBStopCondition
-          - !Ref AwakeInterval
-          - AWS::NoValue
+        SecondsUntilAutoPause: !Ref AwakeInterval
         AutoPause: !Ref StopDB
   CognitoUserPool:
     Type: AWS::Cognito::UserPool
@@ -276,9 +272,6 @@ Resources:
       - CPRole
       - CPBucket
       - CFRole
-Conditions:
-  DBStopCondition:
-    !Equals [true, !Ref StopDB]
 Parameters:
   APISubDomain:
     Type: String

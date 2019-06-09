@@ -26,8 +26,8 @@ Resources:
         AutoPause: true
         MaxCapacity: 2
         MinCapacity: 2
-        AutoPause: !Ref StopDB
         SecondsUntilAutoPause: !Ref AwakeInterval
+        AutoPause: !Ref StopDB
   CognitoUserPool:
     Type: AWS::Cognito::UserPool
     Properties:

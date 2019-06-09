@@ -307,7 +307,7 @@ Parameters:
   StopDB:
     Type: String
     Description: Enables the database stopping during inactivity.
-    Default: True
+    Default: "True"
     AllowedValues:
       - "True"
       - "False"

@@ -25,7 +25,7 @@ Resources:
       ScalingConfiguration:
         MaxCapacity: 2
         MinCapacity: 2
-        SecondsUntilAutoPause: !If [ StopDBCondition, !Ref AwakeInterval, AWS::NoValue ]
+        SecondsUntilAutoPause: !If [ StopDBCondition, !Ref AwakeInterval, !Ref "AWS::NoValue" ]
         AutoPause: !If [ StopDBCondition, True, False ]
   CognitoUserPool:
     Type: AWS::Cognito::UserPool

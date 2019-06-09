@@ -26,7 +26,10 @@ Resources:
         AutoPause: true
         MaxCapacity: 2
         MinCapacity: 2
-        SecondsUntilAutoPause: !Ref AwakeInterval
+        SecondsUntilAutoPause: !If
+          - DBStopCondition
+          - !Ref AwakeInterval
+          - 'AWS::NoValue'
         AutoPause: !Ref StopDB
   CognitoUserPool:
     Type: AWS::Cognito::UserPool
@@ -273,6 +276,9 @@ Resources:
       - CPRole
       - CPBucket
       - CFRole
+Conditions:
+  DBStopCondition:
+    !Equals [true, !Ref StopDB]
 Parameters:
   APISubDomain:
     Type: String

@@ -150,8 +150,15 @@ Parameters:
     Description: Name for the data import bucket. The bucket must not exist. The bucket itself will be created by the template.
     AllowedPattern: "[a-z0-9\\-]+"
     Default: sun-orchard-data-import
-  AwakeInterval:
+  StopDB:
     Type: String
+    Description: Enables the database stopping during inactivity.
+    Default: True
+    AllowedValues:
+      - "True"
+      - "False"
+  AwakeInterval:
+    Type: Number
     Description: Interval in seconds after which the DB goes to sleep.
     Default: 1800
 Outputs:

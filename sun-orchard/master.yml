@@ -55,6 +55,7 @@ Resources:
         AuroraDBName: !Ref AuroraDBName
         AuroraDBUser: !Ref AuroraDBUser
         AuroraDBPassword: !Ref AuroraDBPassword
+        StopDB: !Ref StopDB
         AwakeInterval: !Ref AwakeInterval
         VpcId: !GetAtt VPC.Outputs.VpcId
         VpcSubnet1: !GetAtt VPC.Outputs.VpcSubnet1 

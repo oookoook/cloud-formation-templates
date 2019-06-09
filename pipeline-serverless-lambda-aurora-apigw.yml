@@ -23,10 +23,10 @@ Resources:
         - !Ref VpcSecGroup
       DBSubnetGroupName: !Ref DbSubnet
       ScalingConfiguration:
-        AutoPause: true
         MaxCapacity: 2
         MinCapacity: 2
-        SecondsUntilAutoPause: !Ref AwakeInterval
+        SecondsUntilAutoPause: !If [ StopDBCondition, !Ref AwakeInterval, !Ref "AWS::NoValue" ]
+        AutoPause: !If [ StopDBCondition, True, False ]
   CognitoUserPool:
     Type: AWS::Cognito::UserPool
     Properties:
@@ -272,6 +272,8 @@ Resources:
       - CPRole
       - CPBucket
       - CFRole
+Conditions:
+  StopDBCondition: !Equals [ "True", !Ref StopDB ]
 Parameters:
   APISubDomain:
     Type: String
@@ -303,6 +305,13 @@ Parameters:
   AuroraDBUser:
     Type: String
     Description: Username for the newly created DB user
+  StopDB:
+    Type: String
+    Description: Enables the database stopping during inactivity.
+    Default: "True"
+    AllowedValues:
+      - "True"
+      - "False"
   AwakeInterval:
     Type: String
     Description: Interval in minutes after which the DB goes to sleep.

@@ -295,7 +295,7 @@ Resources:
 Conditions:
   StopDBCondition: !Equals [ "True", !Ref StopDB ]
   UseServerlessCondition: !Equals [ "True", !Ref UseServerless ]
-  UseProvisionedCondition: !Not !Ref UseServerlessCondition 
+  UseProvisionedCondition: !Not [ !Ref UseServerlessCondition ]
 Parameters:
   APISubDomain:
     Type: String

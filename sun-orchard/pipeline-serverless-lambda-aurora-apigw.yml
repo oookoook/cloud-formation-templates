@@ -17,10 +17,8 @@ Resources:
     DeletionPolicy: Snapshot
     Properties: 
       DBInstanceClass: "db.t3.medium"
-      DBName: 
-        Ref: DBName
       Engine: MySQL
-      DatabaseName: !Ref AuroraDBName
+      DBName: !Ref AuroraDBName
       MasterUsername: !Ref AuroraDBUser
       MasterUserPassword: !Ref AuroraDBPassword 
       VpcSecurityGroupIds:

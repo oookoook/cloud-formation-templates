@@ -21,7 +21,7 @@ Resources:
       DBName: !Ref AuroraDBName
       MasterUsername: !Ref AuroraDBUser
       MasterUserPassword: !Ref AuroraDBPassword 
-      VpcSecurityGroupIds:
+      VPCSecurityGroups:
         - !Ref VpcSecGroup
       DBSubnetGroupName: !Ref DbSubnet
       PubliclyAvailable: "True"

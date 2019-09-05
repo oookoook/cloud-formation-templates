@@ -18,6 +18,7 @@ Resources:
     Properties: 
       DBInstanceClass: "db.t3.medium"
       Engine: MySQL
+      AllocatedStorage: !Ref DBStorage
       DBName: !Ref AuroraDBName
       MasterUsername: !Ref AuroraDBUser
       MasterUserPassword: !Ref AuroraDBPassword 
@@ -339,6 +340,10 @@ Parameters:
     AllowedValues:
       - "True"
       - "False"
+  DBStorage:
+    Type: String
+    Description: Database storage allocated when not using Aurora DB.
+    Default: "1"  
   AwakeInterval:
     Type: String
     Description: Interval in minutes after which the DB goes to sleep.

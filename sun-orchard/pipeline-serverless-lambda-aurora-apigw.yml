@@ -182,7 +182,7 @@ Resources:
         Image: 'aws/codebuild/nodejs:8.11.0'
         EnvironmentVariables:
             - Name: 'DB_HOST'
-              Value: !If [ UseServerlessCodition, !GetAtt AuroraDB.Endpoint.Address, !GetAtt DBInstance.Endpoint.Address ]
+              Value: !If [ UseServerlessCondition, !GetAtt AuroraDB.Endpoint.Address, !GetAtt DBInstance.Endpoint.Address ]
             - Name: 'DB_NAME'
               Value: !Ref AuroraDBName
             - Name: 'DB_USER'
@@ -362,7 +362,7 @@ Parameters:
     Default: sg-947393fa 
 Outputs:
   AuroraDBEndpoint:
-    Value: !If [ UseServerlessCodition, !GetAtt AuroraDB.Endpoint.Address, !GetAtt DBInstance.Endpoint.Address ]
+    Value: !If [ UseServerlessCondition, !GetAtt AuroraDB.Endpoint.Address, !GetAtt DBInstance.Endpoint.Address ]
     Description: DBEndpoint
   CognitoUserPoolId:
     Value: !Ref CognitoUserPool

@@ -35,6 +35,8 @@ Resources:
       Type: AWS::EC2::VPC
       Properties:
         CidrBlock: !Ref VpcCIDR
+        EnableDnsSupport: !If [ AddGatewayCondition, True, False ]
+        EnableDnsHostnames: !If [ AddGatewayCondition, True, False ]
         Tags: 
           - Key: Name 
             Value: !Sub '${AWS::StackName}'

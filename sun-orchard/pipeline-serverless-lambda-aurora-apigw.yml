@@ -31,7 +31,7 @@ Resources:
 
   AuroraDB:
     Type: "AWS::RDS::DBCluster"
-    Condition: UseServerlessCodition
+    Condition: UseServerlessCondition
     Properties:
       Engine: 'aurora'
       EngineMode: 'serverless'

@@ -182,7 +182,7 @@ Resources:
         Image: 'aws/codebuild/nodejs:8.11.0'
         EnvironmentVariables:
             - Name: 'DB_HOST'
-              Value: !GetAtt AuroraDB.Endpoint.Address
+              Value: !If [ UseServerlessCodition, !GetAtt AuroraDB.Endpoint.Address, !GetAtt DBInstance.Endpoint.Address ]
             - Name: 'DB_NAME'
               Value: !Ref AuroraDBName
             - Name: 'DB_USER'

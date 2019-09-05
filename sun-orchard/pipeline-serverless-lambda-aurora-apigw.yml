@@ -24,7 +24,7 @@ Resources:
       VPCSecurityGroups:
         - !Ref VpcSecGroup
       DBSubnetGroupName: !Ref DbSubnet
-      PubliclyAvailable: "True"
+      PubliclyAccessible: True
   
 
   AuroraDB:

@@ -33,6 +33,7 @@ Metadata:
           - AuroraDBUser
           - AuroraDBPassword
           - DataBucketName
+          - UseServerless
           - StopDB
           - AwakeInterval
 
@@ -55,6 +56,7 @@ Resources:
         AuroraDBName: !Ref AuroraDBName
         AuroraDBUser: !Ref AuroraDBUser
         AuroraDBPassword: !Ref AuroraDBPassword
+        UseServerless: !Ref UseServerless
         StopDB: !Ref StopDB
         AwakeInterval: !Ref AwakeInterval
         VpcId: !GetAtt VPC.Outputs.VpcId
@@ -148,6 +150,13 @@ Parameters:
     Type: String
     Description: Name for the data import bucket. The bucket must not exist. The bucket itself will be created by the template.
     AllowedPattern: "[a-z0-9\\-]+"
+  UseServerless:
+    Type: String
+    Description: Deploys the DB as Aurora Serverless.
+    Default: "True"
+    AllowedValues:
+      - "True"
+      - "False"
   StopDB:
     Type: String
     Description: Enables the database stopping during inactivity.

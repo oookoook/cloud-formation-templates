@@ -11,8 +11,25 @@ Resources:
       - !Ref VpcSubnet1
       - !Ref VpcSubnet2
   
+  DBInstance:
+    Type: "AWS::RDS::DBInstance"
+    Condition: UseProvisionedCondition
+    DeletionPolicy: Snapshot
+    Properties: 
+      DBInstanceClass: "db.t3.medium"
+      DBName: 
+        Ref: DBName
+      Engine: MySQL
+      DatabaseName: !Ref AuroraDBName
+      MasterUsername: !Ref AuroraDBUser
+      MasterUserPassword: !Ref AuroraDBPassword 
+      VpcSecurityGroupIds:
+        - !Ref VpcSecGroup
+      DBSubnetGroupName: !Ref DbSubnet
+      PubliclyAvailable: "True"
   AuroraDB:
     Type: "AWS::RDS::DBCluster"
+    Condition: UseServerlessCodition
     Properties:
       Engine: aurora
       EngineMode: serverless
@@ -274,6 +291,8 @@ Resources:
       - CFRole
 Conditions:
   StopDBCondition: !Equals [ "True", !Ref StopDB ]
+  UseServerlessCondition: !Equals [ "True", !Ref UseServerless ]
+  UseProvisionedCondition: !Not !Ref UseServerlessCondition
 Parameters:
   APISubDomain:
     Type: String
@@ -305,6 +324,13 @@ Parameters:
   AuroraDBUser:
     Type: String
     Description: Username for the newly created DB user
+  UseServerless:
+    Type: String
+    Description: Deploys the DB as Aurora Serverless.
+    Default: "True"
+    AllowedValues:
+      - "True"
+      - "False"
   StopDB:
     Type: String
     Description: Enables the database stopping during inactivity.
@@ -335,7 +361,7 @@ Parameters:
     Default: sg-947393fa 
 Outputs:
   AuroraDBEndpoint:
-    Value: !GetAtt AuroraDB.Endpoint.Address
+    Value: !If [ UseServerlessCodition, !GetAtt AuroraDB.Endpoint.Address, !GetAtt DBInstance.Endpoint.Address ]
     Description: DBEndpoint
   CognitoUserPoolId:
     Value: !Ref CognitoUserPool

@@ -19,7 +19,17 @@ Parameters:
       Description: Please enter the IP range (CIDR notation) for the private subnet in the second Availability Zone
       Type: String
       Default: 10.192.21.0/24
+    
+    NoGateway:
+      Type: String
+      Description: Adds Internet Gateway to the VPC to make the RDS instance publicly available if set to false.
+      Default: "True"
+      AllowedValues:
+        - "True"
+        - "False"
 
+Conditions:
+  AddGatewayCondition: !Equals [ !Ref NoGateway, "False" ]
 Resources:
     VPC: 
       Type: AWS::EC2::VPC
@@ -78,6 +88,35 @@ Resources:
       Properties:
         RouteTableId: !Ref PrivateRouteTable2
         SubnetId: !Ref PrivateSubnet2
+
+    InternetGateway:
+      Condition: AddGatewayCondition
+      Type: AWS::EC2::InternetGateway
+
+    VPCGWAttachment:
+      Type: AWS::EC2::VPCGatewayAttachment
+      Condition: AddGatewayCondition
+      Properties: 
+        InternetGatewayId: !Ref InternetGateway
+        VpcId: !Ref VPC
+
+    InternetRoute1:
+      Type: AWS::EC2::Route
+      Condition: AddGatewayCondition
+      DependsOn: InternetGateway
+      Properties:
+        RouteTableId: !Ref PrivateRouteTable1
+        DestinationCidrBlock: 0.0.0.0/0
+        GatewayId: !Ref InternetGateway
+
+    InternetRoute2:
+      Type: AWS::EC2::Route
+      Condition: AddGatewayCondition
+      DependsOn: InternetGateway
+      Properties:
+        RouteTableId: !Ref PrivateRouteTable2
+        DestinationCidrBlock: 0.0.0.0/0
+        GatewayId: !Ref InternetGateway
 
     SecurityGroup:    
       Type: AWS::EC2::SecurityGroup

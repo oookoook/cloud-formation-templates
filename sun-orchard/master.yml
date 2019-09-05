@@ -36,11 +36,14 @@ Metadata:
           - UseServerless
           - StopDB
           - AwakeInterval
+          - DBStorage
 
 Resources:
   VPC:
     Type: AWS::CloudFormation::Stack
-    Properties:  
+    Properties:
+      Parameters:
+        NoGateway: !Ref UseServerless  
       TemplateURL: https://s3.eu-central-1.amazonaws.com/akucera-cf-templates/sun-orchard/vpc-aurora-s3.yml
   Backend:
     Type: AWS::CloudFormation::Stack
@@ -172,6 +175,10 @@ Parameters:
     Type: Number
     Description: Interval in seconds after which the DB goes to sleep.
     Default: 1800
+  DBStorage:
+    Type: String
+    Description: Database storage allocated when not using Aurora DB.
+    Default: "1"  
 Outputs:
   VPC:
     Value: !GetAtt VPC.Outputs.VpcId

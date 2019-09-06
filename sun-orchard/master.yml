@@ -62,6 +62,7 @@ Resources:
         UseServerless: !Ref UseServerless
         StopDB: !Ref StopDB
         AwakeInterval: !Ref AwakeInterval
+        DBStorage: !Ref DBStorage
         VpcId: !GetAtt VPC.Outputs.VpcId
         VpcSubnet1: !GetAtt VPC.Outputs.VpcSubnet1 
         VpcSubnet2: !GetAtt VPC.Outputs.VpcSubnet2

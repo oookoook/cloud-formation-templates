@@ -343,7 +343,7 @@ Parameters:
   DBStorage:
     Type: String
     Description: Database storage allocated when not using Aurora DB.
-    Default: "1"  
+    Default: "20"  
   AwakeInterval:
     Type: String
     Description: Interval in minutes after which the DB goes to sleep.

@@ -105,7 +105,9 @@ Resources:
     InternetRoute1:
       Type: AWS::EC2::Route
       Condition: AddGatewayCondition
-      DependsOn: InternetGateway
+      DependsOn: 
+        - InternetGateway
+        - VPCGWAttachment
       Properties:
         RouteTableId: !Ref PrivateRouteTable1
         DestinationCidrBlock: 0.0.0.0/0
@@ -114,7 +116,9 @@ Resources:
     InternetRoute2:
       Type: AWS::EC2::Route
       Condition: AddGatewayCondition
-      DependsOn: InternetGateway
+      DependsOn: 
+        - InternetGateway
+        - VPCGWAttachment
       Properties:
         RouteTableId: !Ref PrivateRouteTable2
         DestinationCidrBlock: 0.0.0.0/0

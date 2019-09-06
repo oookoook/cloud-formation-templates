@@ -177,8 +177,8 @@ Parameters:
     Default: 1800
   DBStorage:
     Type: String
-    Description: Database storage allocated when not using Aurora DB.
-    Default: "1"  
+    Description: Database storage allocated when not using Aurora DB. Minimum is 20(GB)
+    Default: "20"  
 Outputs:
   VPC:
     Value: !GetAtt VPC.Outputs.VpcId

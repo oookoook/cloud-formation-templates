@@ -225,7 +225,7 @@ Parameters:
   MaxMemory:
     Type: Number
     Description: Maximum megabytes of memory for the Lambda function
-    Default: 3072
+    Default: 3008
   ApiKey:
     Type: String
     Description: API key used to authenticate the request

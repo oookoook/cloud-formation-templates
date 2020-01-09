@@ -211,6 +211,7 @@ Parameters:
   GitHubRepo:
     Type: String
     Description: GitHub repository
+    Default: lighthouse-lambda-api
   GitHubUser:
     Type: String
     Description: GitHub repo owner
@@ -221,7 +222,7 @@ Parameters:
   GitHubBranch:
     Type: String
     Description: GitHub branch to deploy from
-    Default: master
+    Default: production
   MaxMemory:
     Type: Number
     Description: Maximum megabytes of memory for the Lambda function
